@@ -15,14 +15,16 @@ export interface IamRolesConstructProps {
   githubConfig?: {
     /**
      * Repositorio de GitHub (formato: owner/repo)
-     * @example "sotrux/sotruxauto-infra"
+     * @example "sotrux-admin/sotruxauto-infra"
      */
     repository: string;
     /**
-     * Branch o ref específico (opcional)
+     * Branches permitidos para este ambiente
+     * Si se especifica un array, permite múltiples branches
+     * Si se especifica un string, permite ese branch o "*" para cualquier branch
      * @default "*" (cualquier branch)
      */
-    branch?: string;
+    branches?: string | string[];
   };
 }
 
@@ -57,25 +59,50 @@ export class IamRolesConstruct extends Construct {
         `arn:aws:iam::${account}:oidc-provider/token.actions.githubusercontent.com`
       );
 
+      // Determinar branches permitidos
+      // Si es un array, permite múltiples branches
+      // Si es un string, permite ese branch o "*" para cualquier branch
+      const branches = props.githubConfig.branches;
+      
+      // Construir la condición del trust policy
+      const trustConditions: any = {
+        StringEquals: {
+          'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
+        },
+      };
+
+      if (Array.isArray(branches)) {
+        // Para múltiples branches, crear múltiples condiciones StringLike
+        // AWS IAM permite múltiples valores en StringLike usando array
+        const branchPatterns = branches.map((branch) => `repo:${props.githubConfig!.repository}:${branch}`);
+        trustConditions.StringLike = {
+          'token.actions.githubusercontent.com:sub': branchPatterns,
+        };
+      } else if (typeof branches === 'string') {
+        // Un solo branch o wildcard
+        const branchPattern = branches === '*' 
+          ? `repo:${props.githubConfig.repository}:*`
+          : `repo:${props.githubConfig.repository}:${branches}`;
+        trustConditions.StringLike = {
+          'token.actions.githubusercontent.com:sub': branchPattern,
+        };
+      } else {
+        // Default: cualquier branch del repo
+        trustConditions.StringLike = {
+          'token.actions.githubusercontent.com:sub': `repo:${props.githubConfig.repository}:*`,
+        };
+      }
+
       // Crear el role para GitHub Actions
       this.githubOidcRole = new iam.Role(this, 'GitHubOidcRole', {
-      roleName: `sotrux-auto-cdk-deploy-role-${props.envName}`,
-      description: `Role para deployments de CDK desde GitHub Actions - ${props.envName}`,
-      assumedBy: new iam.WebIdentityPrincipal(
-        githubOidcProvider.openIdConnectProviderArn,
-        {
-          StringEquals: {
-            'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
-          },
-          StringLike: {
-            'token.actions.githubusercontent.com:sub': props.githubConfig
-              ? `repo:${props.githubConfig.repository}:${props.githubConfig.branch || '*'}`
-              : '*',
-          },
-        }
-      ),
-      maxSessionDuration: cdk.Duration.hours(1),
-    });
+        roleName: `sotrux-auto-cdk-deploy-role-${props.envName}`,
+        description: `Role para deployments de CDK desde GitHub Actions - ${props.envName}`,
+        assumedBy: new iam.WebIdentityPrincipal(
+          githubOidcProvider.openIdConnectProviderArn,
+          trustConditions
+        ),
+        maxSessionDuration: cdk.Duration.hours(1),
+      });
 
     // Permisos mínimos para CDK deployments
     // CloudFormation: Gestión de stacks

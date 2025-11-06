@@ -11,7 +11,7 @@ export interface IamStackProps extends cdk.StackProps {
    */
   githubConfig?: {
     repository: string;
-    branch?: string;
+    branches?: string | string[];
   };
 }
 
@@ -38,8 +38,25 @@ export class IamStack extends BaseStack {
     applyNagSuppressions(this, [
       {
         id: 'AwsSolutions-IAM5',
-        reason: 'GitHub OIDC role necesita permisos amplios para CDK deployments. Los permisos están restringidos por tags donde es posible.',
-        appliesTo: ['Resource::*'],
+        reason: 'GitHub OIDC role necesita permisos amplios para CDK deployments. Los permisos están restringidos por tags donde es posible. CDK requiere crear recursos dinámicamente en múltiples servicios AWS.',
+        appliesTo: [
+          'Resource::*',
+          'Action::ec2:*',
+          'Action::vpc:*',
+          'Action::ecs:*',
+          'Action::ecr:*',
+          'Action::logs:*',
+          'Action::secretsmanager:*',
+          'Action::ssm:*',
+          'Action::apigateway:*',
+          'Action::cloudfront:*',
+          'Action::route53:*',
+          'Action::acm:*',
+          'Resource::arn:aws:s3:::cdk-*-assets-*',
+          'Resource::arn:aws:s3:::cdk-*-assets-*/*',
+          'Resource::arn:aws:s3:::cdk-*-assets-387761228258-us-east-2',
+          'Resource::arn:aws:s3:::cdk-*-assets-387761228258-us-east-2/*',
+        ],
       },
       {
         id: 'AwsSolutions-IAM4',

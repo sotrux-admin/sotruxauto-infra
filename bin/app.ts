@@ -32,12 +32,24 @@ if (!env) {
 
 // Configuración opcional de GitHub OIDC (desde contexto o variables de entorno)
 const githubRepository = app.node.tryGetContext('github-repository') || process.env.GITHUB_REPOSITORY;
-const githubBranch = app.node.tryGetContext('github-branch') || process.env.GITHUB_BRANCH;
+
+// Branches permitidos por ambiente
+const branchesByEnv: Record<string, string> = {
+  dev: 'dev',
+  stg: 'staging',
+  prod: 'main',
+};
+
+// Obtener branch desde contexto, variable de entorno, o usar el default del ambiente
+const githubBranch = app.node.tryGetContext('github-branch') || 
+                     process.env.GITHUB_BRANCH || 
+                     branchesByEnv[envName] || 
+                     '*';
 
 const githubConfig = githubRepository
   ? {
       repository: githubRepository,
-      branch: githubBranch,
+      branches: githubBranch,
     }
   : undefined;
 
