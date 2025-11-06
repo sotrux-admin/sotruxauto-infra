@@ -12,8 +12,7 @@
     "cdk:diff": "npx cdk diff",
     "cdk:deploy": "npx cdk deploy",
     "cdk:destroy": "npx cdk destroy",
-    "cdk:bootstrap": "npx cdk bootstrap",
-    "cdk:nag": "npx cdk-nag"
+    "cdk:bootstrap": "npx cdk bootstrap"
   },
   "keywords": [
     "aws",

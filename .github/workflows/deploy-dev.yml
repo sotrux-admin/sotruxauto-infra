@@ -70,14 +70,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: GitHubActions-Validate
 
-      - name: Run cdk-nag validation
-        run: npm run cdk:nag -- --context env=${{ env.ENVIRONMENT }}
-        continue-on-error: true
-        env:
-          CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID_DEV }}
-          CDK_DEFAULT_REGION: ${{ env.AWS_REGION }}
-
-      - name: Synthesize CloudFormation templates
+      - name: Synthesize CloudFormation templates (includes cdk-nag validation)
         run: npm run cdk:synth -- --context env=${{ env.ENVIRONMENT }}
         env:
           CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID_DEV }}
