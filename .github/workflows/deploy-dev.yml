@@ -44,6 +44,9 @@ jobs:
   validate:
     name: Validate Infrastructure
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Necesario para OIDC
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,9 +63,19 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_DEV }}:role/sotrux-auto-cdk-deploy-role-dev
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-Validate
+
       - name: Run cdk-nag validation
         run: npm run cdk:nag -- --context env=${{ env.ENVIRONMENT }}
         continue-on-error: true
+        env:
+          CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID_DEV }}
+          CDK_DEFAULT_REGION: ${{ env.AWS_REGION }}
 
       - name: Synthesize CloudFormation templates
         run: npm run cdk:synth -- --context env=${{ env.ENVIRONMENT }}
