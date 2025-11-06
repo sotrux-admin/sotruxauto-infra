@@ -73,23 +73,41 @@ export class IamRolesConstruct extends Construct {
 
       if (Array.isArray(branches)) {
         // Para múltiples branches, crear múltiples condiciones StringLike
-        // AWS IAM permite múltiples valores en StringLike usando array
-        const branchPatterns = branches.map((branch) => `repo:${props.githubConfig!.repository}:${branch}`);
+        // GitHub Actions usa el formato: repo:OWNER/REPO:ref:refs/heads/BRANCH
+        // También permitimos pull_request para PRs
+        const branchPatterns = branches.flatMap((branch) => [
+          `repo:${props.githubConfig!.repository}:ref:refs/heads/${branch}`,
+          `repo:${props.githubConfig!.repository}:pull_request`,
+        ]);
         trustConditions.StringLike = {
           'token.actions.githubusercontent.com:sub': branchPatterns,
         };
       } else if (typeof branches === 'string') {
         // Un solo branch o wildcard
-        const branchPattern = branches === '*' 
-          ? `repo:${props.githubConfig.repository}:*`
-          : `repo:${props.githubConfig.repository}:${branches}`;
-        trustConditions.StringLike = {
-          'token.actions.githubusercontent.com:sub': branchPattern,
-        };
+        if (branches === '*') {
+          // Wildcard: permitir cualquier branch y pull requests
+          trustConditions.StringLike = {
+            'token.actions.githubusercontent.com:sub': [
+              `repo:${props.githubConfig.repository}:ref:refs/heads/*`,
+              `repo:${props.githubConfig.repository}:pull_request`,
+            ],
+          };
+        } else {
+          // Branch específico: permitir ese branch y pull requests
+          trustConditions.StringLike = {
+            'token.actions.githubusercontent.com:sub': [
+              `repo:${props.githubConfig.repository}:ref:refs/heads/${branches}`,
+              `repo:${props.githubConfig.repository}:pull_request`,
+            ],
+          };
+        }
       } else {
-        // Default: cualquier branch del repo
+        // Default: cualquier branch del repo y pull requests
         trustConditions.StringLike = {
-          'token.actions.githubusercontent.com:sub': `repo:${props.githubConfig.repository}:*`,
+          'token.actions.githubusercontent.com:sub': [
+            `repo:${props.githubConfig.repository}:ref:refs/heads/*`,
+            `repo:${props.githubConfig.repository}:pull_request`,
+          ],
         };
       }
 
