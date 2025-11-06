@@ -149,5 +149,5 @@ echo ""
 echo "2. Verificar credenciales:"
 echo "   aws sts get-caller-identity --profile sotrux-dev"
 echo ""
-echo "3. Continuar con el despliegue siguiendo el DEPLOYMENT_CHECKLIST.md"
+echo "3. Continuar con el despliegue siguiendo el documents/DEPLOYMENT_CHECKLIST.md"
 
