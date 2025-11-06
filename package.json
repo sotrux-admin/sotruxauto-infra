@@ -7,12 +7,12 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk",
-    "cdk:synth": "cdk synth",
-    "cdk:diff": "cdk diff",
-    "cdk:deploy": "cdk deploy",
-    "cdk:destroy": "cdk destroy",
-    "cdk:bootstrap": "cdk bootstrap",
+    "cdk": "npx cdk",
+    "cdk:synth": "npx cdk synth",
+    "cdk:diff": "npx cdk diff",
+    "cdk:deploy": "npx cdk deploy",
+    "cdk:destroy": "npx cdk destroy",
+    "cdk:bootstrap": "npx cdk bootstrap",
     "cdk:nag": "npx cdk-nag"
   },
   "keywords": [
