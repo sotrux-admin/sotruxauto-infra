@@ -1,0 +1,37 @@
+{
+  "name": "sotruxauto-infra",
+  "version": "1.0.0",
+  "description": "Infraestructura como código para Sotrux Auto usando AWS CDK",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk",
+    "cdk:synth": "cdk synth",
+    "cdk:diff": "cdk diff",
+    "cdk:deploy": "cdk deploy",
+    "cdk:destroy": "cdk destroy",
+    "cdk:bootstrap": "cdk bootstrap",
+    "cdk:nag": "npx cdk-nag"
+  },
+  "keywords": [
+    "aws",
+    "cdk",
+    "infrastructure",
+    "sotrux-auto"
+  ],
+  "author": "devops@sotrux",
+  "license": "UNLICENSED",
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.222.0",
+    "cdk-nag": "^2.28.0",
+    "constructs": "^10.3.0",
+    "source-map-support": "^0.5.21"
+  }
+}
